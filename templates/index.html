@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Task Master</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1>Your Todo</h1>
+
+    <p class="summary">
+        💥 XP: {{ score }} | 🧗 Level: {{ level }} | 🔥 Streak: {{ streak }} days
+    </p>
+
+    {% if level <= 2 %}
+        <p class="badge">🏅 Task Newbie</p>
+    {% elif level <= 5 %}
+        <p class="badge">🥈 Getting Stuff Done</p>
+    {% else %}
+        <p class="badge">🏆 Master Planner</p>
+    {% endif %}
+
+    <form method="GET" action="/" class="search-form">
+        <input type="text" name="q" placeholder="🔍 Search tasks" value="{{ request.args.get('q', '') }}">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if tasks|length < 1 %}
+        <h4 style="text-align: center;">No tasks yet! Create one below ⬇️</h4>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Added</th>
+                    <th>Deadline</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr class="{% if task.complete %}completed{% endif %}">
+                    <td>{{ task.content }}</td>
+                    <td>{{ task.date_created.strftime('%b %d, %Y') }}</td>
+                    <td>
+                        {% if task.deadline %}
+                            {{ task.deadline.strftime('%b %d, %Y %I:%M %p') }}
+                            {% if task.deadline and task.deadline < now %}
+                                <span class="urgent">⚠ Overdue!</span>
+                            {% endif %}
+
+                        {% else %} — {% endif %}
+                    </td>
+                    <td>
+                        <a href="/delete/{{task.id}}" class="action-btn delete">🗑</a>
+                        <a href="/update/{{task.id}}" class="action-btn update">✏️</a>
+                        {% if not task.complete %}
+                            <a href="/complete/{{task.id}}" class="action-btn complete">✅</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <form action="/" method="POST" class="task-form">
+        <input type="text" name="content" placeholder="Enter a new task" required>
+        <input type="datetime-local" name="deadline">
+        <button type="submit">Add Task</button>
+    </form>
+
+    <p id="quote"></p>
+</div>
+
+<script>
+    const quotes = [
+        "✨ The secret of getting ahead is getting started.",
+        "💡 Don’t watch the clock; do what it does. Keep going.",
+        "🔥 You don’t have to be great to start, but you have to start to be great.",
+        "🌱 Small steps every day lead to big changes.",
+    ];
+    document.getElementById('quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+</script>
+{% endblock %}
